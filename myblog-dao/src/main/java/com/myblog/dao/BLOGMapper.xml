@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.myblog.dao.BLOGMapper">
+
+
+	<resultMap id="BaseResultMap" type="com.myblog.entity.BLOG">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="title" property="title" jdbcType="VARCHAR" />
+		<result column="summary" property="summary" jdbcType="VARCHAR" />
+		<result column="releaseDate" property="releasedate" jdbcType="TIMESTAMP" />
+		<result column="clickHit" property="clickhit" jdbcType="INTEGER" />
+		<result column="replyHit" property="replyhit" jdbcType="INTEGER" />
+		<result column="keyWord" property="keyword" jdbcType="VARCHAR" />
+		<!-- 表的关联属性 -->
+		<association  column="typeId" property="blogType"
+			select="com.myblog.dao.BLOGTYPEMapper.selectByPrimaryKey">
+		</association>
+	</resultMap>
+	
+	
+	<resultMap id="ResultMapWithBLOBs" type="com.myblog.entity.BLOG"
+		extends="BaseResultMap">
+		<result column="content" property="content" jdbcType="LONGVARCHAR" />
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		id, title, summary, releaseDate, clickHit, replyHit,
+		typeId, keyWord
+	</sql>
+	<sql id="Blob_Column_List">
+		content
+	</sql>
+	
+	
+	<select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		,
+		<include refid="Blob_Column_List" />
+		from t_blog
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	
+	
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from t_blog
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="com.myblog.entity.BLOG">
+		insert into t_blog (id, title,
+		summary,
+		releaseDate, clickHit, replyHit,
+		typeId, keyWord, content
+		)
+		values (#{id,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR},
+		#{summary,jdbcType=VARCHAR},
+		#{releasedate,jdbcType=TIMESTAMP},
+		#{clickhit,jdbcType=INTEGER}, #{replyhit,jdbcType=INTEGER},
+		#{typeid,jdbcType=INTEGER}, #{keyword,jdbcType=VARCHAR},
+		#{content,jdbcType=LONGVARCHAR}
+		)
+	</insert>
+	
+	<insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.myblog.entity.BLOG">
+		insert into t_blog(id, title, summary, releasedate, clickhit, replyhit, typeid, keyword, content) 
+		values(null, #{title}, #{summary}, now(), 0, 0, #{typeid},#{keyword}, #{content})
+	</insert>
+	
+	
+	<update id="updateByPrimaryKeySelective" parameterType="com.myblog.entity.BLOG">
+		update t_blog
+		<set>
+			<if test="title != null">
+				title = #{title,jdbcType=VARCHAR},
+			</if>
+			<if test="summary != null">
+				summary = #{summary,jdbcType=VARCHAR},
+			</if>
+			<if test="releasedate != null">
+				releaseDate = #{releasedate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="clickhit != null">
+				clickHit = #{clickhit,jdbcType=INTEGER},
+			</if>
+			<if test="replyhit != null">
+				replyHit = #{replyhit,jdbcType=INTEGER},
+			</if>
+			<if test="typeid != null">
+				typeId = #{typeid,jdbcType=INTEGER},
+			</if>
+			<if test="keyword != null">
+				keyWord = #{keyword,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null">
+				content = #{content,jdbcType=LONGVARCHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	
+	
+	<update id="updateByPrimaryKeyWithBLOBs" parameterType="com.myblog.entity.BLOG">
+		update
+		t_blog
+		set title = #{title,jdbcType=VARCHAR},
+		summary =
+		#{summary,jdbcType=VARCHAR},
+		releaseDate =
+		#{releasedate,jdbcType=TIMESTAMP},
+		clickHit =
+		#{clickhit,jdbcType=INTEGER},
+		replyHit = #{replyhit,jdbcType=INTEGER},
+		typeId = #{typeid,jdbcType=INTEGER},
+		keyWord =
+		#{keyword,jdbcType=VARCHAR},
+		content = #{content,jdbcType=LONGVARCHAR}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.myblog.entity.BLOG">
+		update t_blog
+		set
+		title = #{title,jdbcType=VARCHAR},
+		summary =
+		#{summary,jdbcType=VARCHAR},
+		releaseDate =
+		#{releasedate,jdbcType=TIMESTAMP},
+		clickHit =
+		#{clickhit,jdbcType=INTEGER},
+		replyHit = #{replyhit,jdbcType=INTEGER},
+		typeId = #{typeid,jdbcType=INTEGER},
+		keyWord =
+		#{keyword,jdbcType=VARCHAR}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+	<select id="selectByBlogTime" resultMap="ResultMapWithBLOBs">
+		SELECT
+		DATE_FORMAT(releaseDate,'%Y年%m月') AS releaseDateStr,COUNT(*) AS
+		blogCount
+		FROM t_blog GROUP BY DATE_FORMAT(releaseDate,'%Y年%m月') ORDER
+		BY
+		DATE_FORMAT(releaseDate,'%Y年%m月') DESC;
+	</select>
+
+	<select id="selectBlog" parameterType="java.util.Map" resultMap="ResultMapWithBLOBs">
+		select * from t_blog
+		<where>
+			<if test="title !=null and title !=''">
+				and title like #{title}
+			</if>
+			<if test="typeId !=null and typeId!= ''">
+				and typeId=#{typeId}
+			</if>
+			<if test="releaseDateStr!=null and releaseDateStr!=''">
+				and DATE_FORMAT(releaseDate,'%Y年%m月')=#{releaseDateStr}
+			</if>
+		</where>
+		 order by releaseDate desc
+		<if test="page!=null and pageSize!=null">
+			limit #{page}, #{pageSize}
+		</if>
+	</select>
+
+	<select id="getTotalCount" parameterType="java.util.Map" resultType="java.lang.Long">
+		select count(*) from t_blog
+		<where>
+			<if test="typeId !=null and typeId!= ''">
+				and typeId=#{typeId}
+			</if>
+			<if test="releaseDateStr!=null and releaseDateStr!=''">
+				and DATE_FORMAT(releaseDate,'%Y年%m月')=#{releaseDateStr}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getLastBlog" parameterType="java.lang.Integer" resultMap="ResultMapWithBLOBs">
+		select * from t_blog where id&lt;#{id} order by id desc limit 1
+	</select>
+	
+	<select id="getNextBlog" parameterType="java.lang.Integer" resultMap="ResultMapWithBLOBs">
+		select * from t_blog where id&gt;#{id} order by id asc limit 1
+	</select>
+	
+</mapper>

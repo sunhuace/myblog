@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+	
+	<!-- 自动扫描(自动注入) 此处去掉SpringMVC的Controller 注解和相应的异常注解 -->
+	<context:component-scan base-package="com.myblog.*">
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.web.bind.annotation.ControllerAdvice" />
+	</context:component-scan>
+	
+	<!-- 引入属性文件 -->
+	<context:property-placeholder location="classpath:db.properties" />
+	
+	<!-- 配置数据库 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="user" value="${jdbc_username}"></property>
+		<property name="password" value="${jdbc_password}"></property>
+		<property name="jdbcUrl" value="${jdbc_url}"></property>
+		<property name="driverClass" value="${driverClassName}"></property>
+		<property name="initialPoolSize" value="${jdbc.initPoolSize}"></property>
+		<property name="maxPoolSize" value="${jdbc.maxPoolSize}"></property>
+	</bean>
+
+
+	<!-- 此处为 mybatis 的配置文件信息，放在IOC容器中进行管理 在mybatis 中仅仅存放自己的一些配置情况,此处的整合可以完全去掉相应的Mybatis的配置文件， 
+		但还是保留，来配置一些其它的mybitais相关的配置 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="mapperLocations" value="classpath:com/myblog/dao/*.xml"/>
+		<!-- mybatis配置文件 -->
+		<property name="configLocation" value="classpath:mybatis-config.xml"></property> 
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.myblog.dao" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+	</bean>
+	
+    <import resource="classpath:spring-config-shiro.xml"/>
+
+</beans>

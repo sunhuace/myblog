@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.myblog.dao.COMMENTMapper">
+
+	<resultMap id="BaseResultMap" type="com.myblog.entity.COMMENT">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="userIp" property="userip" jdbcType="VARCHAR" />
+		<result column="blogId" property="blogid" jdbcType="INTEGER" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="commentDate" property="commentdate" jdbcType="TIMESTAMP" />
+		<result column="state" property="state" jdbcType="INTEGER" />
+		<association property="blog" column="blogId"
+			select="com.myblog.dao.BLOGMapper.selectByPrimaryKey">
+		</association>
+	</resultMap>
+
+
+	<sql id="Base_Column_List">
+		id, userIp, blogId, content, commentDate, state
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from t_comment
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from
+		t_comment
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+
+	<insert id="insert" parameterType="com.myblog.entity.COMMENT">
+		insert into t_comment (id,
+		userIp, blogId,
+		content, commentDate, state
+		)
+		values
+		(#{id,jdbcType=INTEGER}, #{userip,jdbcType=VARCHAR},
+		#{blogid,jdbcType=INTEGER},
+		#{content,jdbcType=VARCHAR},
+		#{commentdate,jdbcType=TIMESTAMP}, #{state,jdbcType=INTEGER}
+		)
+	</insert>
+
+
+	<insert id="insertSelective" parameterType="com.myblog.entity.COMMENT">
+		insert into t_comment
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="userip != null">
+				userIp,
+			</if>
+			<if test="blogid != null">
+				blogId,
+			</if>
+			<if test="content != null">
+				content,
+			</if>
+			<if test="commentdate != null">
+				commentDate,
+			</if>
+			<if test="state != null">
+				state,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="userip != null">
+				#{userip,jdbcType=VARCHAR},
+			</if>
+			<if test="blogid != null">
+				#{blogid,jdbcType=INTEGER},
+			</if>
+			<if test="content != null">
+				#{content,jdbcType=VARCHAR},
+			</if>
+			<if test="commentdate != null">
+				#{commentdate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="state != null">
+				#{state,jdbcType=INTEGER},
+			</if>
+		</trim>
+	</insert>
+
+
+	<update id="updateByPrimaryKeySelective" parameterType="com.myblog.entity.COMMENT">
+		update t_comment
+		<set>
+			<if test="userip != null">
+				userIp = #{userip,jdbcType=VARCHAR},
+			</if>
+			<if test="blogid != null">
+				blogId = #{blogid,jdbcType=INTEGER},
+			</if>
+			<if test="content != null">
+				content = #{content,jdbcType=VARCHAR},
+			</if>
+			<if test="commentdate != null">
+				commentDate = #{commentdate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="state != null">
+				state = #{state,jdbcType=INTEGER},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+
+	<update id="updateByPrimaryKey" parameterType="com.myblog.entity.COMMENT">
+		update t_comment
+		set userIp = #{userip,jdbcType=VARCHAR},
+		blogId =
+		#{blogid,jdbcType=INTEGER},
+		content = #{content,jdbcType=VARCHAR},
+		commentDate = #{commentdate,jdbcType=TIMESTAMP},
+		state =
+		#{state,jdbcType=INTEGER}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+
+	<select id="listComment" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		select * from t_comment
+		<where>
+			<if test="blogId!=null">
+				blogId=#{blogId}
+			</if>
+			<if test="state!=null">
+				and state=#{state}
+			</if>
+		</where>
+		order by commentdate desc
+		<if test="page!=null and pageSize!=null">
+			limit #{page}, #{pageSize}
+		</if>
+	</select>
+
+	<select id="getToatlComment" resultType="java.lang.Long">
+		select count (*) from
+		t_comment
+	</select>
+
+	<insert id="addComment" parameterType="COMMENT">
+		insert into t_comment
+		values(null, #{userip}, #{blog.id}, #{content}, now(), 0)
+	</insert>
+</mapper>
