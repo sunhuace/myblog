@@ -38,5 +38,9 @@ public class Main {
 		System.out.println(cList);
 	}
 	
+	public Main() {
+		
+	}
+	
 	
 }
