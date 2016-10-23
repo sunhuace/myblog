@@ -37,8 +37,8 @@ public class CommentAdminController {
 		JSONObject object = new JSONObject();
 		object.put("total", total);
 		object.put("rows", JSON.toJSON(cList));
-		ResponseUtil.write(response, object);
-		return null;
+		//ResponseUtil.write(response, object);
+		return cList.toString();
 	}
 	
 	@RequestMapping("/comment/modifyComment")
@@ -58,4 +58,5 @@ public class CommentAdminController {
 		}
 		return null;
 	}
+	
 }
