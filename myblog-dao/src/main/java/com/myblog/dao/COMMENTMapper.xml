@@ -144,7 +144,7 @@
 	</select>
 
 	<select id="getToatlComment" resultType="java.lang.Long">
-		select count(*) from t_comment
+		select count(*) from t_comment 
 	</select>
 
 	<insert id="addComment" parameterType="COMMENT">
